@@ -44,14 +44,8 @@ public class Enemy : MonoBehaviour
 
     void Attack()
     {
-        Debug.Log("Enemy attacks!");
-        PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
-        
-        if (playerMovement != null)
-        {
-            Vector2 attackDirection = (player.position - transform.position).normalized;
-            playerMovement.TakeDamage(attackDamage, attackDirection);
-        }
+        Vector2 attackDirection = (player.position - transform.position).normalized;
+        Player.singleton.TakeDamage(attackDamage, attackDirection);
     }
 
     void OnDrawGizmosSelected()

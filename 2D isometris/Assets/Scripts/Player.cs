@@ -2,29 +2,40 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerMovement : MonoBehaviour
+public class Player : MonoBehaviour
 {
+    private Rigidbody2D rb;
+    private Animator animator;
+    
+    // Movement deklarasi
     public float moveSpeed = 5f;
-    public Rigidbody2D rb;
-    public Animator animator;
+    private float movementSpeedMultiplier;
+    private Vector2 movement;
 
+    // health Player deklarsi 
     public int maxHP = 50;
     public Image[] healthBars;
-    public GameObject gameOverUI;
     public float knockbackForce = 10f;
     public float immunityTime = 3f;
-
-    private Vector2 movement;
-    private Vector2 lastDirection = Vector2.down;
     private int currentHP;
-    private bool isImmune = false;
-    private bool isGameOver = false;
     private bool isKnockedBack = false;
+    private Vector2 lastDirection = Vector2.down;
+    private bool isImmune = false;
+
+    // GameOver deklarasi
+    private bool isGameOver = false;
+
+    public static Player singleton;
+    private void Awake() {
+        singleton = this;
+    }
 
     private void Start()
     {
         currentHP = maxHP;
         UpdateHealthUI();
+        animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
@@ -39,16 +50,21 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!isGameOver && !isKnockedBack)
         {
-            rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(rb.position + movement * moveSpeed * movementSpeedMultiplier * Time.fixedDeltaTime);
         }
     }
 
+    // movemennt
     void Movement()
     {
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
         float speed = movement.sqrMagnitude;
+
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
+        movementSpeedMultiplier = isRunning ? 1.5f : 1.0f;
+
         animator.SetFloat("Horizontal", movement.x);
         animator.SetFloat("Vertical", movement.y);
         animator.SetFloat("Speed", speed);
@@ -61,6 +77,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Terkena damage
     public void TakeDamage(int damage, Vector2 attackDirection)
     {
         if (!isImmune && currentHP > 0)
@@ -74,11 +91,13 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                GameOver();
+                GameOverManager.singleton.TriggerGameOver();
+                isGameOver = true;
             }
         }
     }
 
+    // Membuat efek dorongan dan menjadi immun selama 3 detik
     IEnumerator HandleKnockbackAndImmunity(Vector2 attackDirection)
     {
         isImmune = true;
@@ -110,13 +129,5 @@ public class PlayerMovement : MonoBehaviour
         {
             healthBars[i].enabled = i < barsToShow;
         }
-    }
-
-    void GameOver()
-    {
-        isGameOver = true;
-        gameOverUI.SetActive(true);
-        animator.SetBool("isDead", true);
-        rb.velocity = Vector2.zero;
     }
 }
