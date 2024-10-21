@@ -50,6 +50,7 @@ public class Player : MonoBehaviour
     {
         if (!isGameOver && !isKnockedBack)
         {
+            Debug.Log(moveSpeed * movementSpeedMultiplier);
             rb.MovePosition(rb.position + movement * moveSpeed * movementSpeedMultiplier * Time.fixedDeltaTime);
         }
     }
@@ -61,13 +62,19 @@ public class Player : MonoBehaviour
         movement.y = Input.GetAxisRaw("Vertical");
 
         float speed = movement.sqrMagnitude;
-
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
+        bool isRunning = Input.GetKey(KeyCode.LeftShift) && PlayerStamina.singleton.currentStamina > 0;
         movementSpeedMultiplier = isRunning ? 1.5f : 1.0f;
+
+        if (isRunning){
+            PlayerStamina.singleton.UseStamina(PlayerStamina.singleton.staminaRunCost * Time.deltaTime);
+        } else {
+            PlayerStamina.singleton.RegenerateStamina();
+        }
 
         animator.SetFloat("Horizontal", movement.x);
         animator.SetFloat("Vertical", movement.y);
         animator.SetFloat("Speed", speed);
+        
 
         if (movement != Vector2.zero)
         {
@@ -106,7 +113,6 @@ public class Player : MonoBehaviour
         Vector2 knockbackDirection = attackDirection.normalized;
         rb.velocity = Vector2.zero; // Reset velocity before applying knockback
         rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
-        Debug.Log("Applying knockback: " + (knockbackDirection * knockbackForce));
 
         yield return new WaitForSeconds(0.2f); // Short delay to allow knockback to be visible
         isKnockedBack = false;
