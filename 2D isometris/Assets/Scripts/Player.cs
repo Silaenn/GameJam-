@@ -21,6 +21,8 @@ public class Player : MonoBehaviour
     private bool isKnockedBack = false;
     private Vector2 lastDirection = Vector2.down;
     private bool isImmune = false;
+    public Image BackgorundBar;
+
 
     // GameOver deklarasi
     private bool isGameOver = false;
@@ -50,7 +52,6 @@ public class Player : MonoBehaviour
     {
         if (!isGameOver && !isKnockedBack)
         {
-            Debug.Log(moveSpeed * movementSpeedMultiplier);
             rb.MovePosition(rb.position + movement * moveSpeed * movementSpeedMultiplier * Time.fixedDeltaTime);
         }
     }
@@ -86,23 +87,50 @@ public class Player : MonoBehaviour
 
     // Terkena damage
     public void TakeDamage(int damage, Vector2 attackDirection)
+{
+    if (!isImmune && currentHP > 0)
     {
-        if (!isImmune && currentHP > 0)
-        {
-            currentHP -= damage;
-            UpdateHealthUI();
+        // Simpan HP sebelum damage
+        int previousHP = currentHP;
+        
+        // Kurangi HP
+        currentHP -= damage;
+        if(currentHP < 0) currentHP = 0;
 
-            if (currentHP > 0)
+        // Hitung batas HP untuk setiap bar penuh
+        int hpPerBar = maxHP / healthBars.Length;
+        
+        // Cek apakah damage menyebabkan bar penuh habis
+        bool isBarDepleted = false;
+        for(int i = hpPerBar; i <= previousHP; i += hpPerBar)
+        {
+            // Jika HP sebelumnya di atas batas bar, tapi HP sekarang di bawahnya
+            if(previousHP > i && currentHP <= i)
+            {
+                isBarDepleted = true;
+                break;
+            }
+        }
+
+        // Update UI Health Bar
+        UpdateHealthUI();
+
+        if (currentHP > 0)
+        {
+            // Hanya lakukan knockback jika bar penuh benar-benar habis
+            if (isBarDepleted)
             {
                 StartCoroutine(HandleKnockbackAndImmunity(attackDirection));
             }
-            else
-            {
-                GameOverManager.singleton.TriggerGameOver();
-                isGameOver = true;
-            }
+        }
+        else
+        {
+            GameOverManager.singleton.TriggerGameOver();
+            isGameOver = true;
         }
     }
+}
+
 
     // Membuat efek dorongan dan menjadi immun selama 3 detik
     IEnumerator HandleKnockbackAndImmunity(Vector2 attackDirection)
@@ -111,29 +139,56 @@ public class Player : MonoBehaviour
         isKnockedBack = true;
 
         Vector2 knockbackDirection = attackDirection.normalized;
-        rb.velocity = Vector2.zero; // Reset velocity before applying knockback
+        rb.velocity = Vector2.zero; 
         rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
 
-        yield return new WaitForSeconds(0.2f); // Short delay to allow knockback to be visible
+        yield return new WaitForSeconds(0.2f);
         isKnockedBack = false;
 
-        // Blink the player
+        
         for (int i = 0; i < 6; i++)
         {
             GetComponent<SpriteRenderer>().enabled = !GetComponent<SpriteRenderer>().enabled;
             yield return new WaitForSeconds(0.25f);
         }
 
-        yield return new WaitForSeconds(immunityTime - 1.5f); // Adjust for blinking time
+        yield return new WaitForSeconds(immunityTime - 1.5f); 
         isImmune = false;
     }
 
-    void UpdateHealthUI()
+   void UpdateHealthUI()
+{
+    // Hitung proporsi health bar penuh dan sebagian
+    int barsToShow = currentHP / (maxHP / healthBars.Length); 
+    float partialHealth = (float)(currentHP % (maxHP / healthBars.Length)) / (maxHP / healthBars.Length);
+
+    float originalBarWidth = healthBars[0].rectTransform.sizeDelta.x; // Ambil ukuran asli health bar pertama
+    float backgroundWidth = BackgorundBar.rectTransform.sizeDelta.x;   // Ambil ukuran background bar
+
+    for (int i = 0; i < healthBars.Length; i++)
     {
-        int barsToShow = currentHP / (maxHP / 5);
-        for (int i = 0; i < healthBars.Length; i++)
+        if (i < barsToShow) // Tampilkan bar penuh
         {
-            healthBars[i].enabled = i < barsToShow;
+            // Set kembali ukuran health bar sesuai dengan ukuran awalnya
+            healthBars[i].rectTransform.sizeDelta = new Vector2(originalBarWidth, healthBars[i].rectTransform.sizeDelta.y);
+            healthBars[i].enabled = true;
         }
+        else if (i == barsToShow && partialHealth > 0) // Jika bar terakhir, kurangi proporsinya
+        {
+            // Kurangi lebar hanya pada bar terakhir sesuai dengan sisa HP
+            float newWidth = partialHealth * originalBarWidth; // Tetap gunakan ukuran asli sebagai dasar
+            healthBars[i].rectTransform.sizeDelta = new Vector2(newWidth, healthBars[i].rectTransform.sizeDelta.y);
+            healthBars[i].enabled = true;
+        }
+        else // Sembunyikan bar yang tidak diperlukan
+        {
+            healthBars[i].enabled = false;
+        }
+
     }
+}
+
+
+
+
 }

@@ -5,7 +5,7 @@ public class Enemy : MonoBehaviour
     public float moveSpeed = 3f;
     public float attackRange = 1.5f;
     public float attackCooldown = 2f;
-    public int attackDamage = 10;
+    public int attackDamage = 7;
 
     public Transform player;
     private float nextAttackTime;

@@ -35,13 +35,14 @@ public class PlayerAttack : MonoBehaviour
         }
 
         if(attackCombo == 1){
-            // animator.SetTrigger("");
+            Debug.Log("masuk1");
+            animator.SetTrigger("PlayerAttack1");
             DealDamage();
         } else if(attackCombo == 2){
-            // animator.SetTrigger("");
+            animator.SetTrigger("PlayerAttack2");
             DealDamage();
         } else if (attackCombo == 3){
-            // animator.SetTrigger("");
+            animator.SetTrigger("PlayerAttack3");
             DealDamage();
             Lunge();
             attackCombo = 0;
@@ -68,7 +69,6 @@ public class PlayerAttack : MonoBehaviour
 
     IEnumerator ResetComboTimer(){
         yield return new WaitForSeconds(comboResetTime);
-
         attackCombo = 0;
         canAttack = true;
     }
