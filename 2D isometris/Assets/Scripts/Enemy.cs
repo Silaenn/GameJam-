@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
@@ -6,6 +7,10 @@ public class Enemy : MonoBehaviour
     public float attackRange = 1.5f;
     public float attackCooldown = 2f;
     public int attackDamage = 7;
+    public float maxHealth = 30f;
+    public float currentHealth;
+    public RectTransform healthBarFill;       
+    public Image BackgorundBar;
 
     public Transform player;
     private float nextAttackTime;
@@ -13,6 +18,9 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        currentHealth = maxHealth;
+        UpdateHealthBar(); 
+
     }
 
     void Update()
@@ -52,5 +60,28 @@ public class Enemy : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+
+     public void TakeDamage(float damage)
+    {
+        currentHealth -= damage;  // Kurangi health
+        if (currentHealth <= 0)
+        {
+            Die();  // Panggil metode Die jika health mencapai 0
+        }
+        UpdateHealthBar();  // Update tampilan health bar
+    }
+
+    // Metode untuk memperbarui health bar
+    void UpdateHealthBar()
+    {
+        // Hitung persentase health yang tersisa
+        float healthPercent = currentHealth / maxHealth;
+        healthBarFill.sizeDelta = new Vector2(healthPercent * BackgorundBar.rectTransform.sizeDelta.x, healthBarFill.sizeDelta.y);
+    }
+
+     void Die()
+    {
+        Destroy(gameObject);
     }
 }

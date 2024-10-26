@@ -5,72 +5,144 @@ using UnityEngine;
 public class PlayerAttack : MonoBehaviour
 {
     private Animator animator;
-    private int attackCombo = 0;
+    private GameObject attcakArea;
+    private bool attacking = false;
+    private int comboStep = 0;
+    private float comboTimer = 0f;
+    private float maxComboTime = 1.5f;
     private bool canAttack = true;
-    public float comboResetTime = 1f;
     public float lungeDistance = 2f;
-    public int damage = 10;
     
-    private Rigidbody2D rb;
-    private Coroutine comboResetCoroutine;
-    void Start()
-    {
+    private Vector2 lastDirection; 
+    public static PlayerAttack singleton;
+
+    private bool isComboWindow = false;
+
+    public void Awake() {
+        singleton = this;
+    }
+
+    private void Start() {
         animator = GetComponent<Animator>();
-        rb = GetComponent<Rigidbody2D>();
+        attcakArea = transform.GetChild(0).gameObject;
     }
 
     private void Update() {
         if(Input.GetKeyDown(KeyCode.Return) && canAttack){
-            PerformAttack();
-        }
-    }
-
-    void PerformAttack(){
-        canAttack = false;
-
-        attackCombo++;
-
-        if (comboResetCoroutine != null){
-            StopCoroutine(comboResetCoroutine);
+            Attack();
         }
 
-        if(attackCombo == 1){
-            Debug.Log("masuk1");
-            animator.SetTrigger("PlayerAttack1");
-            DealDamage();
-        } else if(attackCombo == 2){
-            animator.SetTrigger("PlayerAttack2");
-            DealDamage();
-        } else if (attackCombo == 3){
-            animator.SetTrigger("PlayerAttack3");
-            DealDamage();
-            Lunge();
-            attackCombo = 0;
-        }
-
-        comboResetCoroutine = StartCoroutine(ResetComboTimer());
-    }
-
-    void DealDamage(){
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.right, 1.5f);
-
-        if(hit.collider != null && hit.collider.GetComponent<Enemy>()){
-            Enemy enemy = hit.collider.GetComponent<Enemy>();
-            if(enemy != null){
-                // enemy.TakeDamage(damage);
+        if(attacking){
+            comboTimer += Time.deltaTime;
+            if(comboTimer >= maxComboTime){
+                ResetCombo();
             }
         }
     }
 
-    void Lunge(){
-        Vector2 lungeDirection = transform.right;
-        rb.MovePosition(rb.position + lungeDirection * lungeDistance);
+    void Attack(){
+        if(!attacking){
+            attacking = true;
+            comboTimer = 0f;
+            comboStep = 1;
+        }
+        else if(isComboWindow){
+            comboStep++;
+            if(comboStep > 3) {
+                ResetCombo();
+                return;
+            }
+            comboTimer = 0f;
+        }
+
+        PlayAttackAnimation();
+        StartCoroutine(EnableComboWindow());
     }
 
-    IEnumerator ResetComboTimer(){
-        yield return new WaitForSeconds(comboResetTime);
-        attackCombo = 0;
+    void PlayAttackAnimation(){
+        switch(comboStep){
+            case 1:
+                animator.SetTrigger("Attack11");
+                break;
+            case 2:
+                animator.SetTrigger("Attack22");
+                break;
+            case 3:
+                animator.SetTrigger("Attack33");
+                break;
+        }
+
+        attcakArea.SetActive(true);
+        AlignAttackArea();
+        StartCoroutine(DisableAttackAreaAfterDelay(0.25f));
+    }
+
+    // Fungsi ini akan dipanggil dari Animation Event di akhir setiap animasi attack
+    public void OnAttackAnimationComplete()
+    {
+        if(!isComboWindow) // Jika tidak dalam window combo, reset
+        {
+            ResetCombo();
+        }
+        else 
+        { 
+            // Set idle animation berdasarkan arah
+            SetIdleAnimation();
+        }
+    }
+
+    // membuat supaya kembali ke animasi awal setelah attack
+    void SetIdleAnimation()
+    {
+    animator.ResetTrigger("Attack11");
+    animator.ResetTrigger("Attack22");
+    animator.ResetTrigger("Attack33");
+
+        if (lastDirection.y > 0) {
+            animator.Play("idleUp");
+        } 
+        else if (lastDirection.y < 0) {
+            animator.Play("idleDown");
+        } 
+        else if (lastDirection.x > 0) {
+            animator.Play("idleRight");
+        } 
+        else if (lastDirection.x < 0) {
+            animator.Play("idleLeft");
+        }
+    }
+
+    IEnumerator EnableComboWindow(){
+        isComboWindow = true;
+        yield return new WaitForSeconds(0.7f);
+        isComboWindow = false;
+    }
+
+    // kontrol arah attackArea
+    void AlignAttackArea(){
+        attcakArea.transform.position = transform.position; 
+        float angle = Mathf.Atan2(lastDirection.y, lastDirection.x) * Mathf.Rad2Deg + 180f; 
+        attcakArea.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+    }
+
+    // menonaktifkan attackArea setelah attack
+    IEnumerator DisableAttackAreaAfterDelay(float delay){
+        yield return new WaitForSeconds(delay);
+        attcakArea.SetActive(false);
+    }
+
+    // mengambil arah terakhir player
+    public void SetLastDirection(Vector2 direction){
+        lastDirection = direction;
+    }
+
+    void ResetCombo(){
+        comboStep = 0;
+        attacking = false;
+        comboTimer = 0f;
+        isComboWindow = false;
         canAttack = true;
+        Debug.Log(comboStep);
+        SetIdleAnimation();
     }
-
 }

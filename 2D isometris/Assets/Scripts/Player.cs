@@ -27,6 +27,19 @@ public class Player : MonoBehaviour
     // GameOver deklarasi
     private bool isGameOver = false;
 
+    // Dash
+    private float dashDistance = 5f;
+    private float dashDuration = 0.3f;
+    private float dashCooldown = 1f;
+    private int staminaCost = 30;
+    private float imunityDuration = 0.3f;
+    private bool isDashing = false;
+    private bool isImmnune = false;
+    private float lastDashTime = 0f;
+    private Vector2 dashDirection;
+
+
+
     public static Player singleton;
     private void Awake() {
         singleton = this;
@@ -50,7 +63,7 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!isGameOver && !isKnockedBack)
+        if (!isGameOver && !isKnockedBack && !isDashing)
         {
             rb.MovePosition(rb.position + movement * moveSpeed * movementSpeedMultiplier * Time.fixedDeltaTime);
         }
@@ -82,7 +95,50 @@ public class Player : MonoBehaviour
             lastDirection = movement.normalized;
             animator.SetFloat("LastHorizontal", lastDirection.x);
             animator.SetFloat("LastVertical", lastDirection.y);
+
+            PlayerAttack.singleton.SetLastDirection(lastDirection);
         }
+
+        //  Dash
+        if(Input.GetKeyDown(KeyCode.Space) && Time.time >= lastDashTime + dashCooldown && PlayerStamina.singleton.currentStamina >= staminaCost){
+            dashDirection = new Vector2(movement.x, movement.y).normalized;
+            Debug.Log(dashDirection);
+            if(dashDirection != Vector2.zero){
+                StartCoroutine(Dash());
+            }
+        }
+    }
+
+    // Dash
+    IEnumerator Dash()
+{
+    PlayerStamina.singleton.UseStamina(staminaCost);
+    lastDashTime = Time.time;
+
+    isDashing = true;
+    isImmnune = true;
+
+    Vector2 startPos = rb.position;
+    Vector2 dashTarget = startPos + dashDirection * dashDistance;
+
+
+    float elapsed = 0f;
+
+    while (elapsed < dashDuration)
+    {
+        elapsed += Time.deltaTime;
+        rb.MovePosition(Vector2.Lerp(startPos, dashTarget, elapsed / dashDuration));
+        yield return null;
+    }
+
+    // rb.MovePosition(dashTarget); // Pindahkan ke posisi akhir untuk memastikan dash selesai.
+    isDashing = false;
+    isImmnune = false;
+}
+
+
+    public bool IsImmune(){
+        return isImmnune;
     }
 
     // Terkena damage
@@ -187,8 +243,5 @@ public class Player : MonoBehaviour
 
     }
 }
-
-
-
 
 }
