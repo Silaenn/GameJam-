@@ -15,6 +15,12 @@ public class Enemy : MonoBehaviour
     public Transform player;
     private float nextAttackTime;
 
+    public static Enemy singleton;
+
+    private void Awake() {
+        singleton = this;
+    }
+
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
@@ -80,8 +86,9 @@ public class Enemy : MonoBehaviour
         healthBarFill.sizeDelta = new Vector2(healthPercent * BackgorundBar.rectTransform.sizeDelta.x, healthBarFill.sizeDelta.y);
     }
 
-     void Die()
+    public void Die()
     {
         Destroy(gameObject);
+        CountdownTimer.singleton.YouWin();
     }
 }

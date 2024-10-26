@@ -4,43 +4,48 @@ using UnityEngine.SceneManagement; // Untuk memuat ulang scene atau memindah ke 
 
 public class CountdownTimer : MonoBehaviour
 {
-    public float timeRemaining = 60f; // 2 menit (120 detik)
-    public bool isGameOver = false; // Status apakah game sudah berakhir
+    private float timeRemaining = 0f; // 2 menit (120 detik)
     public Text timerText; // Text UI untuk menampilkan sisa waktu, jika ingin ditampilkan
+    private bool isEnemyDead = false;
+    public float finalTime;
+    public Text finalTimeText;
+    public static CountdownTimer singleton;
+    private void Awake() {
+        singleton = this;
+    }
 
     void Update()
     {
-        if (!isGameOver)
-        {
-            if (timeRemaining > 0)
+            if (!isEnemyDead)
             {
-                timeRemaining -= Time.deltaTime;
+                timeRemaining += Time.deltaTime;
                 UpdateTimerDisplay(timeRemaining); // Update tampilan waktu (opsional)
+            } else {
+                YouWin();
             }
-            else
-            {
-                GameOver();
-            }
-        }
     }
 
     // Method untuk update tampilan waktu pada UI
     void UpdateTimerDisplay(float currentTime)
     {
-        currentTime += 1;  // Untuk menghindari tampilan 0 sebelum waktunya habis
-
-        // Hitung menit dan detik
-        float minutes = Mathf.FloorToInt(currentTime / 60); 
-        float seconds = Mathf.FloorToInt(currentTime % 60);
-
         // Tampilkan dalam format MM:SS
-        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        timerText.text = FormatTime(currentTime);
     }
 
-    // Method yang dipanggil saat waktu habis
-    void GameOver()
-    {
-        isGameOver = true;
-        GameOverManager.singleton.TriggerGameOver();
+    public void YouWin(){
+        if(Enemy.singleton.currentHealth <= 0 && !isEnemyDead){
+            isEnemyDead = true;
+            finalTime = timeRemaining;
+            finalTimeText.text = "Final Time: " + FormatTime(finalTime);   
+            YouWinManager.singleton.TriggerYouWin();
+        }
     }
+
+    string FormatTime(float time){
+        int minutes = Mathf.FloorToInt(time / 60);
+        int seconds = Mathf.FloorToInt(time % 60);
+
+        return string.Format("{0:00}:{1:00}", minutes, seconds);
+    }
+
 }
