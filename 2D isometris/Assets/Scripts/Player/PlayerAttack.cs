@@ -142,7 +142,6 @@ public class PlayerAttack : MonoBehaviour
         comboTimer = 0f;
         isComboWindow = false;
         canAttack = true;
-        Debug.Log(comboStep);
         SetIdleAnimation();
     }
 }
