@@ -34,11 +34,8 @@ public class Player : MonoBehaviour
     private int staminaCost = 30;
     private float imunityDuration = 0.3f;
     private bool isDashing = false;
-    private bool isImmnune = false;
     private float lastDashTime = 0f;
     private Vector2 dashDirection;
-
-
 
     public static Player singleton;
     private void Awake() {
@@ -102,7 +99,6 @@ public class Player : MonoBehaviour
         //  Dash
         if(Input.GetKeyDown(KeyCode.Space) && Time.time >= lastDashTime + dashCooldown && PlayerStamina.singleton.currentStamina >= staminaCost){
             dashDirection = new Vector2(movement.x, movement.y).normalized;
-            Debug.Log(dashDirection);
             if(dashDirection != Vector2.zero){
                 StartCoroutine(Dash());
             }
@@ -116,7 +112,10 @@ public class Player : MonoBehaviour
     lastDashTime = Time.time;
 
     isDashing = true;
-    isImmnune = true;
+    isImmune = true;
+
+    Collider2D collider = GetComponent<Collider2D>();
+    collider.enabled = false;
 
     Vector2 startPos = rb.position;
     Vector2 dashTarget = startPos + dashDirection * dashDistance;
@@ -131,15 +130,12 @@ public class Player : MonoBehaviour
         yield return null;
     }
 
-    // rb.MovePosition(dashTarget); // Pindahkan ke posisi akhir untuk memastikan dash selesai.
+    collider.enabled = true;
+
     isDashing = false;
-    isImmnune = false;
+    isImmune = false;
 }
 
-
-    public bool IsImmune(){
-        return isImmnune;
-    }
 
     // Terkena damage
     public void TakeDamage(int damage, Vector2 attackDirection)

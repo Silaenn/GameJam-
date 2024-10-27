@@ -26,7 +26,6 @@ public class Enemy : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;
         UpdateHealthBar(); 
-
     }
 
     void Update()
