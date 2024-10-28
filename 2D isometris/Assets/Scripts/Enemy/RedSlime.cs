@@ -2,43 +2,48 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static AttackArea;
+using UnityEngine.UI;
 
 public class RedSlime : MonoBehaviour, IDamageable
 {
-    public float moveSpeed = 3f;       // Kecepatan musuh bergerak
-    private Transform player;          // Referensi ke posisi pemain
-    public int damageAmount = 10;      // Jumlah damage yang diberikan musuh kepada player
-    public float attackCooldown = 1f;  // Waktu jeda setelah menyerang (dalam detik)
-    private bool canAttack = true;     // Status apakah musuh bisa menyerang
-    public int maxHealth = 30;         // Nyawa musuh
+    public float moveSpeed = 3f;       
+    private Transform player;          
+    public int damageAmount = 10;      
+    public float attackCooldown = 1f;  
+    private bool canAttack = true;     
+    public int maxHealth = 30;         
     private int currentHealth;
-    public GameObject dropItemPrefab;  // Prefab item yang akan di-drop
-    public float dropChance = 0.2f;    // Persentase kemungkinan drop (20%)
+    public RectTransform healthBarFill;       
+    public Image BackgorundBar;
+    public GameObject dropItemPrefab;  
+    public float dropChance = 0.2f;    
     public float minimumDistanceToOtherEnemies = 1.5f;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;
+        UpdateHealthBar(); 
     }
 
-    public void TakeDamage(int damageAmount)
+    public void TakeDamage(int damage)
     {
-        currentHealth -= damageAmount;
+        currentHealth -= damage;
         if (currentHealth <= 0)
         {
             Die();
         }
+        UpdateHealthBar();
     }
 
     void Die()
     {
         // Cek apakah item akan di-drop berdasarkan persentase
         float randomValue = Random.Range(0f, 1f);
-        if (randomValue <= dropChance)
-        {
+        // if (randomValue <= dropChance)
+        // {
             DropItem();
-        }
+        // }
 
         Destroy(gameObject);
     }
@@ -46,9 +51,6 @@ public class RedSlime : MonoBehaviour, IDamageable
     void DropItem()
     {
         Instantiate(dropItemPrefab, transform.position, Quaternion.identity);
-
-        PlayerHealth.singleton.currentHP+= 5;
-        PlayerHealth.singleton.UpdateHealthUI(PlayerHealth.singleton.currentHP);   
     }
 
     void Update()
@@ -89,7 +91,7 @@ public class RedSlime : MonoBehaviour, IDamageable
                 Player.singleton.TakeDamage(damageAmount, attackDirection); // Serang player
                 StartCoroutine(AttackCooldown());
             }
-        }
+        } 
     }
 
     IEnumerator AttackCooldown()
@@ -99,5 +101,11 @@ public class RedSlime : MonoBehaviour, IDamageable
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
         moveSpeed = 3f;
+    }
+
+     void UpdateHealthBar()
+    {
+        float healthPercent = (float)currentHealth / maxHealth;
+        healthBarFill.sizeDelta = new Vector2(healthPercent * BackgorundBar.rectTransform.sizeDelta.x, healthBarFill.sizeDelta.y);
     }
 }

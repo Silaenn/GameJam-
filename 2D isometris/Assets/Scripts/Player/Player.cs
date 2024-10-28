@@ -107,4 +107,13 @@ public class Player : MonoBehaviour
         isImmune = false;
     }
 
+    private void OnTriggerEnter2D(Collider2D other) {
+         if(other.gameObject.CompareTag("GreenOrb")){
+            Destroy(other.gameObject);
+            PlayerHealth.singleton.currentHP+= 5;
+            PlayerHealth.singleton.UpdateHealthUI(PlayerHealth.singleton.currentHP);   
+        }
+    }
+    
+
 }
