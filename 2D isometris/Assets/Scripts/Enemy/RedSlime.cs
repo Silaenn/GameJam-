@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static AttackArea;
 
-public class RedSlime : MonoBehaviour
+public class RedSlime : MonoBehaviour, IDamageable
 {
     public float moveSpeed = 3f;       // Kecepatan musuh bergerak
     private Transform player;          // Referensi ke posisi pemain
@@ -13,6 +14,7 @@ public class RedSlime : MonoBehaviour
     private int currentHealth;
     public GameObject dropItemPrefab;  // Prefab item yang akan di-drop
     public float dropChance = 0.2f;    // Persentase kemungkinan drop (20%)
+    public float minimumDistanceToOtherEnemies = 1.5f;
 
     void Start()
     {
@@ -23,8 +25,6 @@ public class RedSlime : MonoBehaviour
     public void TakeDamage(int damageAmount)
     {
         currentHealth -= damageAmount;
-        Debug.Log("Enemy took damage: " + damageAmount);
-
         if (currentHealth <= 0)
         {
             Die();
@@ -33,8 +33,6 @@ public class RedSlime : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("Enemy died!");
-
         // Cek apakah item akan di-drop berdasarkan persentase
         float randomValue = Random.Range(0f, 1f);
         if (randomValue <= dropChance)
@@ -48,16 +46,35 @@ public class RedSlime : MonoBehaviour
     void DropItem()
     {
         Instantiate(dropItemPrefab, transform.position, Quaternion.identity);
-        Debug.Log("Item dropped!");
+
+        PlayerHealth.singleton.currentHP+= 5;
+        PlayerHealth.singleton.UpdateHealthUI(PlayerHealth.singleton.currentHP);   
     }
 
     void Update()
     {
         if (player != null && canAttack)
         {
-            Vector2 direction = (player.position - transform.position).normalized;
+            if(IsNearOtherEnemy()){
+                transform.position = transform.position;
+            }
             transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
         }
+    }
+
+    bool IsNearOtherEnemy(){
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+
+        foreach(GameObject enemy in enemies){
+            if(enemy != gameObject){
+                float distance = Vector2.Distance(transform.position, enemy.transform.position);
+                if(distance < minimumDistanceToOtherEnemies){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -69,14 +86,9 @@ public class RedSlime : MonoBehaviour
             if (playerMovement != null)
             {
                 Vector2 attackDirection = (collision.transform.position - transform.position).normalized;
-                playerMovement.TakeDamage(damageAmount, attackDirection); // Serang player
+                Player.singleton.TakeDamage(damageAmount, attackDirection); // Serang player
                 StartCoroutine(AttackCooldown());
             }
-        }
-        else if (collision.gameObject.CompareTag("Enemy"))
-        {
-            Vector2 pushDirection = (transform.position - collision.transform.position).normalized;
-            transform.position += (Vector3)pushDirection * 1f;
         }
     }
 

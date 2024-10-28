@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
+using static AttackArea;
 
-public class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour, IDamageable
 {
     public float moveSpeed = 3f;
     public float attackRange = 1.5f;
@@ -67,7 +68,7 @@ public class Enemy : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 
-     public void TakeDamage(float damage)
+     public void TakeDamage(int damage)
     {
         currentHealth -= damage;  // Kurangi health
         if (currentHealth <= 0)

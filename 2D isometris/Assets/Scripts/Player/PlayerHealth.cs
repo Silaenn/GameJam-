@@ -5,7 +5,7 @@ public class PlayerHealth : MonoBehaviour
 {
     public Image[] healthBars;
     public int maxHP;
-    private int currentHP;
+    public int currentHP;
 
     public static PlayerHealth singleton;
     private void Awake() {

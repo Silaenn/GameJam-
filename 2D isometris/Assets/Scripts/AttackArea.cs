@@ -6,15 +6,18 @@ public class AttackArea : MonoBehaviour
 {
     private int damage = 7;  
 
+    public interface IDamageable {
+        void TakeDamage(int damage);
+    }   
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Cek apakah objek memiliki komponen 'Enemy' atau apapun yang menerima damage
-        Enemy enemy = other.GetComponent<Enemy>();
-
-        if (enemy != null)
+        if (other.CompareTag("Enemy"))
         {
-            // Berikan damage kepada objek tersebut
-            enemy.TakeDamage(damage);
+            var damageable = other.GetComponent<IDamageable>();
+
+            if(damageable != null){
+                damageable.TakeDamage(damage);
+            }
         }
     }
 }
