@@ -18,6 +18,7 @@ public class RedSlime : MonoBehaviour, IDamageable
     public GameObject dropItemPrefab;  
     public float dropChance = 0.2f;    
     public float minimumDistanceToOtherEnemies = 1.5f;
+    private Vector2 velocity = Vector2.zero;
 
     void Start()
     {
@@ -60,7 +61,7 @@ public class RedSlime : MonoBehaviour, IDamageable
             if(IsNearOtherEnemy()){
                 transform.position = transform.position;
             }
-            transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
+            transform.position = Vector2.SmoothDamp(transform.position, player.position, ref velocity, 0.3f, moveSpeed);
         }
     }
 
