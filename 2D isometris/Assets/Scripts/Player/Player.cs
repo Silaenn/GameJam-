@@ -10,10 +10,14 @@ public class Player : MonoBehaviour
     public int maxHP = 50;
     public float knockbackForce = 10f;
     public float immunityTime = 3f;
-    private int currentHP;
+    public int currentHP;
     public bool isKnockedBack = false;
     public bool isImmune = false;
-
+    public bool isStunned = false;  // Menandakan apakah player sedang stun
+    public float stunDuration = 3f; // Durasi stun dalam detik
+    private Vector2 lastDirection;
+     private string previousAnimation;
+    private Animator animator;
 
     // GameOver deklarasi
     public bool isGameOver = false;
@@ -34,6 +38,7 @@ public class Player : MonoBehaviour
         PlayerHealth.singleton.maxHP = maxHP;
         PlayerHealth.singleton.UpdateHealthUI(currentHP);
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
 
     // Terkena damage
@@ -41,7 +46,6 @@ public class Player : MonoBehaviour
 {
     if (!isImmune && currentHP > 0)
     {
-        // Simpan HP sebelum damage
         int previousHP = currentHP;
         
         // Kurangi HP
@@ -106,7 +110,26 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(immunityTime - 1.5f); 
         isImmune = false;
     }
+    public void GetStunned(float duration)
+    {
+        if (!isStunned)
+        {
+            StartCoroutine(StunPlayer(duration));
+        }
+    }
 
+    private IEnumerator StunPlayer(float duration)
+    {
+        isStunned = true;
+        animator.SetFloat("Speed", 0f);
+        previousAnimation = GetCurrentAnimation();
+        SetIdleAnimation();
+        rb.velocity = Vector2.zero;  // Hentikan gerakan player
+        yield return new WaitForSeconds(duration);
+
+        isStunned = false;
+        ResetAnimation();
+    }
     private void OnTriggerEnter2D(Collider2D other) {
          if(other.gameObject.CompareTag("GreenOrb")){
             Destroy(other.gameObject);
@@ -114,6 +137,36 @@ public class Player : MonoBehaviour
             PlayerHealth.singleton.UpdateHealthUI(PlayerHealth.singleton.currentHP);   
         }
     }
-    
 
+    private string GetCurrentAnimation()
+    {
+        // Ambil nama animasi saat ini dari animator
+        Debug.Log(animator.GetCurrentAnimatorClipInfo(0)[0].clip.name);
+        return animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+    }
+
+    private void ResetAnimation()
+    {
+        // Mengembalikan ke animasi sebelumnya
+        animator.Play(previousAnimation);
+    }
+
+    void SetIdleAnimation()
+    {
+        if (lastDirection.y > 0) {
+            animator.Play("idleUp");
+        } 
+        else if (lastDirection.y < 0) {
+            animator.Play("idleDown");
+        } 
+        else if (lastDirection.x > 0) {
+            animator.Play("idleRight");
+        } 
+        else if (lastDirection.x < 0) {
+            animator.Play("idleLeft");
+        }
+    }
+    public void SetLastDirection(Vector2 direction){
+        lastDirection = direction;
+    }
 }

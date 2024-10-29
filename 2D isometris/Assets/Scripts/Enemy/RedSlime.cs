@@ -18,6 +18,10 @@ public class RedSlime : MonoBehaviour, IDamageable
     public GameObject dropItemPrefab;  
     public float dropChance = 0.2f;    
     public float minimumDistanceToOtherEnemies = 1.5f;
+    public float knockbackForce = 10f;   // Kekuatan knockback
+    public float immunityDuration = 1f; // Durasi imunitas setelah terkena serangan
+    private bool isImmune = false;      // Status imun
+    private bool isKnockedBack = false;
     private Vector2 velocity = Vector2.zero;
 
     void Start()
@@ -27,14 +31,48 @@ public class RedSlime : MonoBehaviour, IDamageable
         UpdateHealthBar(); 
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Vector2 attackDirection)
     {
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
             Die();
+        }  else
+        {
+            Knockback(attackDirection);
+            StartCoroutine(BecomeImmune());
         }
         UpdateHealthBar();
+    }
+
+     void Knockback(Vector2 direction)
+    {
+        isKnockedBack = true;
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            Vector2 knockbackDirection = direction.normalized;
+            rb.velocity = Vector2.zero; 
+            rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
+        }
+        StartCoroutine(EndKnockback());
+    }
+
+    IEnumerator EndKnockback(){
+        yield return new WaitForSeconds(0.5f);
+        isKnockedBack = false;
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+    if (rb != null)
+    {
+        rb.velocity = Vector2.zero;
+    }
+    }
+    IEnumerator BecomeImmune()
+    {
+        isImmune = true; // Aktifkan imunitas
+        yield return new WaitForSeconds(immunityDuration); // Tunggu selama durasi imunitas
+        isImmune = false; // Matikan imunitas
     }
 
     void Die()
@@ -56,7 +94,7 @@ public class RedSlime : MonoBehaviour, IDamageable
 
     void Update()
     {
-        if (player != null && canAttack)
+        if (player != null && canAttack && !isImmune && !isKnockedBack)
         {
             if(IsNearOtherEnemy()){
                 transform.position = transform.position;

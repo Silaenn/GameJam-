@@ -109,6 +109,8 @@ MonoBehaviour:
   dropItemPrefab: {fileID: 6860888569076848556, guid: bad5791f4361c2341beca283c56b7a11, type: 3}
   dropChance: 0.2
   minimumDistanceToOtherEnemies: 1.5
+  knockbackForce: 5
+  immunityDuration: 1
 --- !u!61 &1535485771167507981
 BoxCollider2D:
   m_ObjectHideFlags: 0
