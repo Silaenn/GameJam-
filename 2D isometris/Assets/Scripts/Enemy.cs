@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
@@ -14,6 +16,10 @@ public class Enemy : MonoBehaviour
 
     public Transform player;
     private float nextAttackTime;
+
+    public float knockbackForce = 5f;   // Kekuatan knockback
+    public float immunityDuration = 1f; // Durasi imunitas setelah terkena serangan
+    private bool isImmune = false;      // Status imun
 
     public static Enemy singleton;
 
@@ -30,7 +36,7 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        if (player != null)
+        if (player != null && !isImmune)
         {
             float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
@@ -67,12 +73,17 @@ public class Enemy : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 
-     public void TakeDamage(float damage)
+     public void TakeDamage(float damage, Vector2 attackDirection)
     {
         currentHealth -= damage;  // Kurangi health
         if (currentHealth <= 0)
         {
             Die();  // Panggil metode Die jika health mencapai 0
+        }
+        else
+        {
+            Knockback(attackDirection);
+            StartCoroutine(BecomeImmune());
         }
         UpdateHealthBar();  // Update tampilan health bar
     }
@@ -84,7 +95,21 @@ public class Enemy : MonoBehaviour
         float healthPercent = currentHealth / maxHealth;
         healthBarFill.sizeDelta = new Vector2(healthPercent * BackgorundBar.rectTransform.sizeDelta.x, healthBarFill.sizeDelta.y);
     }
-
+    void Knockback(Vector2 direction)
+    {
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            Vector2 knockbackDirection = direction.normalized * -1; // Arah knockback adalah berlawanan dari serangan
+            rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
+        }
+    }
+    IEnumerator BecomeImmune()
+    {
+        isImmune = true; // Aktifkan imunitas
+        yield return new WaitForSeconds(immunityDuration); // Tunggu selama durasi imunitas
+        isImmune = false; // Matikan imunitas
+    }
     public void Die()
     {
         Destroy(gameObject);

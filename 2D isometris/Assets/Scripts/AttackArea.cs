@@ -13,8 +13,11 @@ public class AttackArea : MonoBehaviour
 
         if (enemy != null)
         {
-            // Berikan damage kepada objek tersebut
-            enemy.TakeDamage(damage);
+            // Hitung arah serangan berdasarkan posisi player dan enemy
+            Vector2 attackDirection = (enemy.transform.position - transform.position).normalized;
+
+            // Berikan damage dan arah serangan kepada objek tersebut
+            enemy.TakeDamage(damage, attackDirection);
         }
     }
 }

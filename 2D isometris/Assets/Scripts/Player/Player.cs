@@ -10,10 +10,11 @@ public class Player : MonoBehaviour
     public int maxHP = 50;
     public float knockbackForce = 10f;
     public float immunityTime = 3f;
-    private int currentHP;
+    public int currentHP;
     public bool isKnockedBack = false;
     public bool isImmune = false;
-
+    public bool isStunned = false;  // Menandakan apakah player sedang stun
+    public float stunDuration = 3f; // Durasi stun dalam detik
 
     // GameOver deklarasi
     public bool isGameOver = false;
@@ -41,7 +42,12 @@ public class Player : MonoBehaviour
 {
     if (!isImmune && currentHP > 0)
     {
-        // Simpan HP sebelum damage
+        if (!isStunned)
+        {
+            currentHP -= damage;
+            Debug.Log("Player took damage: " + damage);
+        }
+                // Simpan HP sebelum damage
         int previousHP = currentHP;
         
         // Kurangi HP
@@ -106,5 +112,24 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(immunityTime - 1.5f); 
         isImmune = false;
     }
+    public void GetStunned(float duration)
+    {
+        if (!isStunned)
+        {
+            StartCoroutine(StunPlayer(duration));
+        }
+    }
 
+    private IEnumerator StunPlayer(float duration)
+    {
+        isStunned = true;
+        Debug.Log("Player is stunned!");
+
+        // Player tidak dapat bergerak selama stun
+        rb.velocity = Vector2.zero;  // Hentikan gerakan player
+        yield return new WaitForSeconds(duration);
+
+        isStunned = false;
+        Debug.Log("Player is no longer stunned.");
+    }
 }

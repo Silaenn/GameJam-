@@ -116,4 +116,42 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
         Player.singleton.isImmune = false;
     }
+    // PlayerMovement script
+    public void TakeDamage(int damageAmount, Vector2 attackDirection)
+    {
+        // Logika pengurangan nyawa player
+        Player.singleton.currentHP -= damageAmount;
+
+        // Cek apakah player mati
+        if (Player.singleton.currentHP <= 0)
+        {
+            Player.singleton.isGameOver = true;
+            Debug.Log("Player died!");
+            // Mungkin tambahkan animasi kematian atau logika game over
+        }
+        else
+        {
+            // Jika player masih hidup, lakukan knockback atau efek lain
+            StartCoroutine(HandleKnockback(attackDirection));
+        }
+    }
+
+    // Coroutine untuk mengatasi knockback setelah terkena serangan
+    private IEnumerator HandleKnockback(Vector2 direction)
+    {
+        Player.singleton.isKnockedBack = true;
+        float knockbackDuration = 0.2f; // Atur durasi knockback
+        Vector2 knockbackTarget = rb.position + direction * 2f; // Atur jarak knockback
+
+        float elapsed = 0f;
+        while (elapsed < knockbackDuration)
+        {
+            rb.MovePosition(Vector2.Lerp(rb.position, knockbackTarget, elapsed / knockbackDuration));
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        Player.singleton.isKnockedBack = false;
+    }
+
 }

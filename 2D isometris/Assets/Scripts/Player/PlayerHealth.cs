@@ -1,20 +1,36 @@
 using UnityEngine;
 using UnityEngine.UI;
-
+using System.Collections;
+using System.Collections.Generic;
 public class PlayerHealth : MonoBehaviour
 {
     public Image[] healthBars;
     public int maxHP;
-    private int currentHP;
+    public int currentHP;
 
     public static PlayerHealth singleton;
     private void Awake() {
         singleton = this;
+        currentHP = maxHP; // Inisialisasi HP penuh saat game dimulai
+    }
+    public void TakeDamage(int damageAmount)
+    {
+        currentHP -= damageAmount;
+        currentHP = Mathf.Clamp(currentHP, 0, maxHP); // Pastikan HP tidak kurang dari 0
+
+        // Update tampilan health bar
+        UpdateHealthUI(currentHP);
+
+        if (currentHP <= 0)
+        {
+            // Player mati, bisa tambahkan logika lain jika dibutuhkan
+            Debug.Log("Player died!");
+        }
     }
     public void UpdateHealthUI(int currentHP){
         this.currentHP = currentHP;
 
-         int barsToShow = currentHP / (maxHP / healthBars.Length); 
+        int barsToShow = currentHP / (maxHP / healthBars.Length); 
         float partialHealth = (float)(currentHP % (maxHP / healthBars.Length)) / (maxHP / healthBars.Length);
 
     float originalBarWidth = healthBars[0].rectTransform.sizeDelta.x; // Ambil ukuran asli health bar pertama

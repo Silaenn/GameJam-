@@ -64,12 +64,14 @@ public class RedSlime : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player") && canAttack)
         {
-            PlayerMovement playerMovement = collision.gameObject.GetComponent<PlayerMovement>();
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
 
-            if (playerMovement != null)
+            if (playerHealth != null)
             {
-                Vector2 attackDirection = (collision.transform.position - transform.position).normalized;
-                playerMovement.TakeDamage(damageAmount, attackDirection); // Serang player
+                // Kurangi nyawa player
+                playerHealth.TakeDamage(damageAmount);
+
+                // Jalankan cooldown untuk serangan
                 StartCoroutine(AttackCooldown());
             }
         }
