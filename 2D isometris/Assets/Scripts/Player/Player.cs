@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     public bool isImmune = false;
     public bool isStunned = false;  // Menandakan apakah player sedang stun
     public float stunDuration = 3f; // Durasi stun dalam detik
+    private Vector2 lastDirection;
+     private string previousAnimation;
+    private Animator animator;
 
     // GameOver deklarasi
     public bool isGameOver = false;
@@ -35,6 +38,7 @@ public class Player : MonoBehaviour
         PlayerHealth.singleton.maxHP = maxHP;
         PlayerHealth.singleton.UpdateHealthUI(currentHP);
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
 
     // Terkena damage
@@ -42,12 +46,6 @@ public class Player : MonoBehaviour
 {
     if (!isImmune && currentHP > 0)
     {
-        if (!isStunned)
-        {
-            currentHP -= damage;
-            Debug.Log("Player took damage: " + damage);
-        }
-                // Simpan HP sebelum damage
         int previousHP = currentHP;
         
         // Kurangi HP
@@ -123,13 +121,52 @@ public class Player : MonoBehaviour
     private IEnumerator StunPlayer(float duration)
     {
         isStunned = true;
-        Debug.Log("Player is stunned!");
-
-        // Player tidak dapat bergerak selama stun
+        animator.SetFloat("Speed", 0f);
+        previousAnimation = GetCurrentAnimation();
+        SetIdleAnimation();
         rb.velocity = Vector2.zero;  // Hentikan gerakan player
         yield return new WaitForSeconds(duration);
 
         isStunned = false;
-        Debug.Log("Player is no longer stunned.");
+        ResetAnimation();
+    }
+    private void OnTriggerEnter2D(Collider2D other) {
+         if(other.gameObject.CompareTag("GreenOrb")){
+            Destroy(other.gameObject);
+            PlayerHealth.singleton.currentHP+= 5;
+            PlayerHealth.singleton.UpdateHealthUI(PlayerHealth.singleton.currentHP);   
+        }
+    }
+
+    private string GetCurrentAnimation()
+    {
+        // Ambil nama animasi saat ini dari animator
+        Debug.Log(animator.GetCurrentAnimatorClipInfo(0)[0].clip.name);
+        return animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+    }
+
+    private void ResetAnimation()
+    {
+        // Mengembalikan ke animasi sebelumnya
+        animator.Play(previousAnimation);
+    }
+
+    void SetIdleAnimation()
+    {
+        if (lastDirection.y > 0) {
+            animator.Play("idleUp");
+        } 
+        else if (lastDirection.y < 0) {
+            animator.Play("idleDown");
+        } 
+        else if (lastDirection.x > 0) {
+            animator.Play("idleRight");
+        } 
+        else if (lastDirection.x < 0) {
+            animator.Play("idleLeft");
+        }
+    }
+    public void SetLastDirection(Vector2 direction){
+        lastDirection = direction;
     }
 }

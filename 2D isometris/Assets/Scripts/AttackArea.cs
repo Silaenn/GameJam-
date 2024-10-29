@@ -4,20 +4,22 @@ using UnityEngine;
 
 public class AttackArea : MonoBehaviour
 {
-    private int damage = 7;  
+    private int damage = 7;
 
+    public interface IDamageable {
+        void TakeDamage(int damage, Vector2 attackDirection);
+    }   
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Cek apakah objek memiliki komponen 'Enemy' atau apapun yang menerima damage
-        Enemy enemy = other.GetComponent<Enemy>();
-
-        if (enemy != null)
+        if (other.CompareTag("Enemy"))
         {
-            // Hitung arah serangan berdasarkan posisi player dan enemy
-            Vector2 attackDirection = (enemy.transform.position - transform.position).normalized;
+            Vector2 attackDirection = (other.transform.position - transform.position).normalized;
 
-            // Berikan damage dan arah serangan kepada objek tersebut
-            enemy.TakeDamage(damage, attackDirection);
+            var damageable = other.GetComponent<IDamageable>();
+
+            if(damageable != null){
+                damageable.TakeDamage(damage, attackDirection);
+            }
         }
     }
 }

@@ -11,6 +11,10 @@ public class TrapManager : MonoBehaviour
     public float respawnDelay = 5f;  // Waktu delay untuk respawn
 
     private List<GameObject> activeTraps = new List<GameObject>();
+    public static TrapManager singleton;
+    private void Awake() {
+        singleton = this;
+    }
 
     void Start()
     {

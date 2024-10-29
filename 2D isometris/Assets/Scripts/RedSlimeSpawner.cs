@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour
+public class RedSlimeSpawner : MonoBehaviour
 {
     public GameObject enemyPrefab; // Prefab musuh yang akan di-spawn
     public float spawnInterval = 3f; // Interval waktu antar spawn
-    public float spawnDistance = 10f; // Jarak spawn dari kamera
+    private float spawnDistance = 5f; // Jarak spawn dari kamera
 
     private Camera mainCamera;
 

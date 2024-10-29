@@ -29,14 +29,14 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private void Update() {
-        if(!Player.singleton.isKnockedBack && !Player.singleton.isGameOver){
+        if(!Player.singleton.isKnockedBack && !Player.singleton.isGameOver && !Player.singleton.isStunned){
             HandleMovementInput();
             HandleDashInput();
         }
     }
 
     private void FixedUpdate() {
-        if(!Player.singleton.isGameOver && !Player.singleton.isKnockedBack && !isDashing){
+        if(!Player.singleton.isGameOver && !Player.singleton.isKnockedBack && !isDashing && !Player.singleton.isStunned){
             rb.MovePosition(rb.position + movement * moveSpeed * movementSpeedMultiplier * Time.fixedDeltaTime);
         }
     }
@@ -74,6 +74,7 @@ public class PlayerMovement : MonoBehaviour
             animator.SetFloat("LastVertical", lastDirection.y);
 
             PlayerAttack.singleton.SetLastDirection(lastDirection);
+            Player.singleton.SetLastDirection(lastDirection);
         }
     }
 
