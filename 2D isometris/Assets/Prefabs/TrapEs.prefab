@@ -28,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 4800917878515687929}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.206215, y: -4.356849, z: -0.10108019}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 4.206215, y: -4.356849, z: -0.10108}
+  m_LocalScale: {x: 10.769886, y: 10.769886, z: 10.769886}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -99,7 +99,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stunDuration: 3
-  trapManager: {fileID: 0}
 --- !u!61 &2600843189580366318
 BoxCollider2D:
   m_ObjectHideFlags: 0

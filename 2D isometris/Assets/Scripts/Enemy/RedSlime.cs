@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static AttackArea;
 using UnityEngine.UI;
@@ -24,10 +23,13 @@ public class RedSlime : MonoBehaviour, IDamageable
     private bool isKnockedBack = false;
     private Vector2 velocity = Vector2.zero;
 
+    private Animator animator;
+
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         currentHealth = maxHealth;
+        animator = GetComponent<Animator>();
         UpdateHealthBar(); 
     }
 
@@ -98,8 +100,14 @@ public class RedSlime : MonoBehaviour, IDamageable
         {
             if(IsNearOtherEnemy()){
                 transform.position = transform.position;
+            } else {
+
+             Vector2 direction = (player.position - transform.position).normalized;   
+             transform.position = Vector2.SmoothDamp(transform.position, player.position, ref velocity, 0.3f, moveSpeed);
+
+             animator.SetFloat("Horizontal", direction.x);
+             animator.SetFloat("Vertical", direction.y);
             }
-            transform.position = Vector2.SmoothDamp(transform.position, player.position, ref velocity, 0.3f, moveSpeed);
         }
     }
 

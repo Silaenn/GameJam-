@@ -121,7 +121,7 @@ public class PlayerAttack : MonoBehaviour
     // kontrol arah attackArea
     void AlignAttackArea(){
         attcakArea.transform.position = transform.position; 
-        float angle = Mathf.Atan2(lastDirection.y, lastDirection.x) * Mathf.Rad2Deg + 180f; 
+        float angle = Mathf.Atan2(lastDirection.y, lastDirection.x) * Mathf.Rad2Deg; 
         attcakArea.transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
